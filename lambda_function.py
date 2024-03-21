@@ -21,13 +21,16 @@ def lambda_handler(event, context):
         op_str = "\n".join(op)
 
         print("writing to s3")
+        s3_destination_key = s3_file_key[0:11] + "input.json"
         destination_bucket = "doordash-target-zn12"
         s3_client.put_object(
-            Bucket=destination_bucket, Key=s3_file_key, Body=op_str.encode("utf-8")
+            Bucket=destination_bucket,
+            Key=s3_destination_key,
+            Body=op_str.encode("utf-8"),
         )
-        sub = "Successfull: data processing"
-        message = "input s3 file {} {} has been processed succesfully".format(
-            bucket_name, s3_file_key
+        sub = "Successfull: Data processed"
+        message = "Input s3 file {} / {} has been processed succesfully".format(
+            bucket_name, s3_destination_key
         )
         sns_client.publish(
             Subject=sub, TargetArn=sns_arn, Message=message, MessageStructure="text"
@@ -35,8 +38,8 @@ def lambda_handler(event, context):
     except Exception as err:
         print(err)
         sub = "Failed: data processing failed"
-        message = "input s3 file {} {} has been failed Error = {}".format(
-            bucket_name, s3_file_key, err
+        message = "input s3 file {} / {} has been failed Error = {}".format(
+            bucket_name, s3_destination_key, err
         )
         sns_client.publish(
             Subject=sub, TargetArn=sns_arn, Message=message, MessageStructure="text"
